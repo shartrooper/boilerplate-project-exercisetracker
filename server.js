@@ -1,19 +1,20 @@
 const express = require('express')
-    const app = express()
-    const bodyParser = require('body-parser')
+const app = express()
+const bodyParser = require('body-parser')
 
-    const cors = require('cors')
+const cors = require('cors')
+const mongoose = require('mongoose')
+const exerciseTrackerRouter= require('./controller/exercise-tracker')
 
-    const mongoose = require('mongoose')
-
-    /** this project needs a db !! **/
-    console.log('connecting to DB URI');
+/** this project needs a db !! **/
+console.log('connecting to DB URI');
 
 const serverConnected = async() => {
     try {
         await mongoose.connect(process.env.MONGODB_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
+            useCreateIndex: true,
             useFindAndModify: false
         });
         console.log('connected to mongo DataBase');
@@ -35,6 +36,10 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/views/index.html')
 });
 
+// Router for microservise
+
+app.use('/api/exercise',exerciseTrackerRouter);
+
 // Not found middleware
 app.use((req, res, next) => {
     return next({
@@ -45,8 +50,7 @@ app.use((req, res, next) => {
 
 // Error Handling middleware
 app.use((err, req, res, next) => {
-    let errCode,
-    errMessage
+    let errCode,errMessage
 
     if (err.errors) {
         // mongoose validation error
